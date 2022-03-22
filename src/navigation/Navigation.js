@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
 import TodoScreen from '../screens/TodoScreen';
@@ -13,13 +13,16 @@ const Stack = createNativeStackNavigator();
 export const Navigation = () => {
 
     const dispatch = useDispatch()
-    const { userData } = useSelector((state) => state.userData)
+    // const { userData } = useSelector((state) => state.userData)
+    const [user, setUser] = useState('')
 
     useEffect(() => {
         auth().onAuthStateChanged((user) => {
             const currentUser = user ? { uid: user.uid, email: user.email } : null
             dispatch(LOGIN(currentUser))
+            setUser(currentUser)
         })
+        console.log('acaa', user)
     }, [])
     
     return (
@@ -32,7 +35,7 @@ export const Navigation = () => {
         }}
     >
         {
-            userData ? 
+            user ? 
             <Stack.Screen name="TodoScreen" component={TodoScreen} />
             :
             <>

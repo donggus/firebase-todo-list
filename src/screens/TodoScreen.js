@@ -39,7 +39,11 @@ const TodoScreen = () => {
       setTodos(_data.todoList)
       dispatch(SET_LOADING(false))
     }
-    setUid(userData.uid)
+
+    if (userData) {
+      setUid(userData.uid)
+    }
+    
     getTodos().catch(error => console.log('getTodos'))
   }, [userData, todosData])  
 

@@ -22,7 +22,6 @@ export const Navigation = () => {
             dispatch(LOGIN(currentUser))
             setUser(currentUser)
         })
-        console.log('acaa', user)
     }, [])
     
     return (

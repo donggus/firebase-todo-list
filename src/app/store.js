@@ -7,7 +7,6 @@ import todoReducer from '../features/todoSlice';
 const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
-    whitelist: ['authReducer']
 }
 
 const rootReducer = combineReducers({

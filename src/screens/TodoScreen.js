@@ -16,7 +16,8 @@ import { startLogout } from '../features/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons'
 import firestore from '@react-native-firebase/firestore'
-import { SET_LOADING, updateTodoList } from '../features/todoSlice';
+import { setTodoQueue, SET_LOADING, updateTodoList, UPDATE_TODO } from '../features/todoSlice';
+import NetInfo from '@react-native-community/netinfo';
 
 const TodoScreen = () => {
 
@@ -40,24 +41,48 @@ const TodoScreen = () => {
       dispatch(SET_LOADING(false))
     }
 
+    const subscribe = NetInfo.addEventListener((state) => {
+      dispatch(SET_LOADING(true))
+      if (state.isConnected) {
+        getTodos().catch(error => console.log('getTodos'))
+        dispatch(SET_LOADING(false))
+      } else {
+        setTodos(todosData.todoList)
+        dispatch(SET_LOADING(false))
+      }
+    })
+
+    // UID for actions params
     if (userData) {
       setUid(userData.uid)
     }
     
-    getTodos().catch(error => console.log('getTodos'))
-  }, [userData, todosData])  
+    return () => {
+      subscribe();
+    };
+    
+  }, [userData, todosData])
 
+
+  
   // Add a new to-do
   const handleAddTodo = () => {
     if (inputText === "" ) return;
 
     const newTodo = {
-      id:  Math.floor(Math.random() * 1000),
+      id:  Math.floor(Math.random() * 10000),
       text: inputText,
     };
     // Append new to-do to already existing list
     const todoList = [...todos, newTodo]
-    dispatch(updateTodoList({ uid, todos: { todoList }}))
+    NetInfo.addEventListener((state) => {
+      if (state.isConnected) {
+        dispatch(updateTodoList({ uid, todos: { todoList }}))
+      } else {
+        dispatch(setTodoQueue({ todos: { todoList }}))
+      }
+    })
+    // dispatch(updateTodoList({ uid, todos: { todoList }}))
     setInputText("");
   };
 
@@ -74,7 +99,14 @@ const TodoScreen = () => {
     const index = todoList.findIndex( item => item.id == todoId )
     todoList[index].text = inputEditValue
 
-    dispatch(updateTodoList({ uid, todos: { todoList }}))
+    NetInfo.addEventListener((state) => {
+      if (state.isConnected) {
+        dispatch(updateTodoList({ uid, todos: { todoList }}))
+      } else {
+        dispatch(setTodoQueue({ todos: { todoList }}))
+      }
+    })
+    // dispatch(updateTodoList({ uid, todos: { todoList }}))
     setModalVisible(!modalVisible)    
   };
 
@@ -83,7 +115,20 @@ const TodoScreen = () => {
     let newTodos = todos;
     const todoList = newTodos.filter( item => todo != item )
     Alert.alert('Eliminar', 'Estas a punto de eliminar la tarea. ¿Estás seguro?', 
-      [{ text: 'Si', onPress: () => dispatch(updateTodoList({ uid, todos: { todoList }}))}, { text: 'Cancelar', style: 'destructive' }]
+      [{ 
+        text: 'Si', 
+        onPress: () => 
+          NetInfo.addEventListener((state) => {
+            if (state.isConnected) {
+              dispatch(updateTodoList({ uid, todos: { todoList }}))
+            } else {
+              dispatch(setTodoQueue({ todos: { todoList }}))
+            }
+          })
+      }, 
+      { 
+        text: 'Cancelar', style: 'destructive' 
+      }]
     )
   };
 

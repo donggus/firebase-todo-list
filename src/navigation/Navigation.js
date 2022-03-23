@@ -13,14 +13,12 @@ const Stack = createNativeStackNavigator();
 export const Navigation = () => {
 
     const dispatch = useDispatch()
-    // const { userData } = useSelector((state) => state.userData)
-    const [user, setUser] = useState('')
+    const { userData } = useSelector((state) => state.userData)
 
     useEffect(() => {
         auth().onAuthStateChanged((user) => {
             const currentUser = user ? { uid: user.uid, email: user.email } : null
             dispatch(LOGIN(currentUser))
-            setUser(currentUser)
         })
     }, [])
     
@@ -34,7 +32,7 @@ export const Navigation = () => {
         }}
     >
         {
-            user ? 
+            userData ? 
             <Stack.Screen name="TodoScreen" component={TodoScreen} />
             :
             <>

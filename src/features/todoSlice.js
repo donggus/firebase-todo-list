@@ -5,13 +5,14 @@ import { Alert } from 'react-native'
 const initialState = {
     todosData: [],
     loading: false,
+    queuedTodo: []
 }
 
 const todoSlice = createSlice({
   name: 'userTodo',
   initialState,
   reducers: {
-        SET_TODOS: (state, action) => {
+        SET_QUEUED_TODO: (state, action) => {
             state.todosData = action.payload
         },
         UPDATE_TODO: (state, action ) => {
@@ -24,26 +25,10 @@ const todoSlice = createSlice({
 });
 
 export const {
-    SET_TODOS,
+    SET_QUEUED_TODO,
     UPDATE_TODO,
     SET_LOADING,
 } = todoSlice.actions;
-
-export const getTodoList = createAsyncThunk(
-    'todoList/get', 
-    async (args, { dispatch }) => {
-        dispatch(SET_LOADING(true));
-        try {
-            const { todos } = await firestore().collection('users').doc(args.uid).get()
-            dispatch( SET_TODOS(todos) )
-            dispatch( SET_LOADING(false) );
-        } catch (error) {
-            console.log(error)
-            dispatch(SET_LOADING(false))
-            Alert.alert('updateTodoList', error.toString(), [{ text: 'OK' }])
-        }
-    }
-);
 
 export const updateTodoList = createAsyncThunk(
     'todoList/update', 
@@ -61,5 +46,14 @@ export const updateTodoList = createAsyncThunk(
         }
     }
 );
+
+export const setTodoQueue = createAsyncThunk(
+    'todoList/queue',
+    async (args, { dispatch }) => {
+        dispatch(SET_LOADING(true));
+        dispatch(SET_QUEUED_TODO(args.todos));
+        dispatch(SET_LOADING(false));
+    }
+)
 
 export default todoSlice.reducer
